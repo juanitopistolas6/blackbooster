@@ -3,6 +3,7 @@ import { gql } from '@apollo/client'
 export const ALL_PELICULAS = gql`
   query {
     infoPelis {
+      id_pelicula
       titulo
       director_nombre
       director_apellido
@@ -25,6 +26,7 @@ export const ALL_USUARIOS = gql`
 export const MEMBRESIAS_EXPIRADAS_PROXIMAS = gql`
   query {
     membresiasExpiradasYProximas {
+      id_membresia
       nombre
       apellido
       fecha_adquirida
@@ -76,21 +78,24 @@ export const TOP_PELICULAS = gql`
     }
   }
 `
-export const FACTUA_DETAILS = gql`
+export const ALL_USUARIOS_V2 = gql`
   query {
-    facturasDetails {
-      id_factura
-      Paciente
-      motivo
+    usuarios {
+      id_usuario
+      nombre
+      apellido
+      edad
+      forma_pago
     }
   }
 `
 
-export const PACIENTES_ESPECIALIDAD = gql`
-  query($idEspecialidad: Int!) {
-    pacientesEspecialidad(idEspecialidad: $idEspecialidad) {
-      Paciente
-      especialidad
+export const GET_MEMBRESIA = gql`
+  query($idMembresia: Int!) {
+    getMembresia(idMembresia: $idMembresia) {
+      id_membresia
+      id_cliente
+      fecha_adquirida
     }
   }
 `
@@ -117,34 +122,39 @@ export const FACTURAS_INTERVALO = gql`
   }
 `
 
-export const GET_INTERVAL_CITAS = gql`
-  query($idCita: Int!) {
-    getCitasIntervalo(idCita: $idCita) {
-      id_citas
-      id_medico
-      id_paciente
-      fecha
-      motivo
+export const GET_RENTA = gql`
+  query($idRenta: Int!) {
+    getRenta(idRenta: $idRenta) {
+      id_renta
+      id_pelicula
+      id_usuario
+      fecha_alquilada
+      fecha_retorno
     }
   }
 `
 
-export const GET_PACIENTE = gql`
-  query($idPaciente: Int!) {
-    getPaciente(idPaciente: $idPaciente) {
-      id_paciente
-      nombre
+export const GET_USUARIO = gql`
+  query($idUsuario: Int!) {
+    getUsuario(idUsuario: $idUsuario) {
       apellido
+      id_usuario
+      nombre
+      edad
+      forma_pago
     }
   }
 `
 
-export const GET_ENTIDAD = gql`
-  query($idEntidad: Int!) {
-    getEntidad(idEntidad: $idEntidad) {
-      id_aseguradora
-      id_paciente
-      id_entidad
+export const GET_PELICULA = gql`
+  query($idPelicula: Int!) {
+    getPelicula(idPelicula: $idPelicula) {
+      id_pelicula
+      titulo
+      id_clasificacion
+      id_director
+      id_genero
+      ano_estreno
     }
   }
 `

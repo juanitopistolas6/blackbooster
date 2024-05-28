@@ -1,37 +1,38 @@
 import { type DocumentNode } from 'graphql'
 import { type Query } from './contexts/result-context'
-import { ALL_PELICULAS, FACTURAS_INTERVALO, FECHA_MULTAS, HISTORIAL_RENTA, MEMBRESIAS_EXPIRADAS_PROXIMAS, MONTO_RENTA_MES, TOP_PELICULAS } from './graphql/queries'
-import { FacturaDetails } from './Modals/factura-details'
+import { ALL_PELICULAS, ALL_USUARIOS_V2, FECHA_MULTAS, HISTORIAL_RENTA, MEMBRESIAS_EXPIRADAS_PROXIMAS, MONTO_RENTA_MES, TOP_PELICULAS } from './graphql/queries'
+import { FacturaDetails } from './Modals/fechas'
 import { IntervaloModal } from './Modals/intervaloModal'
-import { FacturasIntervalo, HistorialRentas, Membresias, MontoRentasMes, Peliculas, PeliculasMulta, Top10 } from './tableHeads'
-import { EditIntervalo } from './Modals/edit-intervalo'
-import { EditPacientes } from './Modals/edit-pacientes'
-import { EditPacienteAsegurado } from './Modals/edit-paciente-asegurado'
-import { EditPagosIntervalo } from './Modals/edit-pagos-intervalo'
-import { EditFacturas } from './Modals/edit-facturas-intervalo'
-import { EditMedicoAsignado } from './Modals/edit-medico-asignado'
+import { HistorialRentas, Membresias, MontoRentasMes, Peliculas, PeliculasMulta, Top10, Usuarios } from './tableHeads'
+import { EditIntervalo } from './Modals/edit-renta'
+import { EditPacientes } from './Modals/edit-pelicula'
+import { EditMedicoAsignado } from './Modals/edit-membresia'
 import { TopPeliculas } from './Modals/top10'
+import { EditUsuarios } from './Modals/edit-usuario'
 
-export interface Paciente {
-  id_paciente: number
+export interface Usuario {
+  id_usuario: number
   nombre: string
   apellido: string
+  edad: number
+  forma_pago: string
 }
 
-export interface Pago {
-  id_pago: number
-  id_factura: number
-  monto: float
-  pago_recibido: string
-  id_entidad: number
+export interface Pelicula {
+  id_pelicula: number
+  titulo: string
+  id_director: number
+  id_genero: number
+  id_clasificacion: number
+  ano_estreno: string
 }
 
 export interface Cita {
-  id_citas: number
-  id_medico: number
-  id_paciente: number
-  fecha: string
-  motivo: string
+  id_renta: number
+  id_usuario: number
+  id_pelicula: number
+  fecha_alquilada: string
+  fecha_retorno: string
 }
 
 export interface Entidad {
@@ -40,10 +41,10 @@ export interface Entidad {
   id_aseguradora: number | null
 }
 
-export interface PacienteAsignado {
-  id_asignado: number
-  id_paciente: number
-  id_medico: number
+export interface Membresia {
+  id_membresia: number
+  id_cliente: number
+  fecha_adquerida: string
 }
 
 export interface Medico {
@@ -85,7 +86,7 @@ export enum TABLAS {
   MONTO_TOTAL = 'Renta por mes y monto total',
   PELICULAS_MULTA = 'Peliculas con multa',
   TOP10_PELICULAS = 'Top 10 peliculas',
-  FACTURAS_INTERVALO = 'Facturas por intervalo'
+  USUARIOS = 'Usuarios'
 }
 
 export const DefaultValues: { [key in TABLAS]: Query } = {
@@ -94,14 +95,16 @@ export const DefaultValues: { [key in TABLAS]: Query } = {
     query: ALL_PELICULAS,
     labelBtn: 'Añadir pelicula',
     tableHeads: Peliculas,
-    variables: {},
+    variables: {
+      idUsuario: 0
+    },
     modal: null,
     editComponent: EditPacientes
   },
   [TABLAS.MEMBRESIAS]: {
     tabla: 'Membresias expiradas / por expirar',
     query: MEMBRESIAS_EXPIRADAS_PROXIMAS,
-    labelBtn: 'Añadir paciente asignado',
+    labelBtn: 'Añadir membresia',
     tableHeads: Membresias,
     variables: {
       medicoId: 0
@@ -112,8 +115,7 @@ export const DefaultValues: { [key in TABLAS]: Query } = {
     tabla: 'Monto de renta por mes',
     query: MONTO_RENTA_MES,
     tableHeads: MontoRentasMes,
-    variables: {},
-    editComponent: EditPacienteAsegurado
+    variables: {}
   },
   [TABLAS.HISTORIAL_RENTA]: {
     tabla: 'Historial de renta',
@@ -134,8 +136,7 @@ export const DefaultValues: { [key in TABLAS]: Query } = {
       fechaInicio: '',
       fechaFin: ''
     },
-    modal: FacturaDetails,
-    editComponent: EditPagosIntervalo
+    modal: FacturaDetails
   },
   [TABLAS.TOP10_PELICULAS]: {
     tabla: 'Top 10 peliculas',
@@ -149,16 +150,15 @@ export const DefaultValues: { [key in TABLAS]: Query } = {
     modal: TopPeliculas,
     editComponent: null
   },
-  [TABLAS.FACTURAS_INTERVALO]: {
-    tabla: 'Facturas por intervalo',
-    query: FACTURAS_INTERVALO,
-    tableHeads: FacturasIntervalo,
-    labelBtn: 'Añadir factura',
+  [TABLAS.USUARIOS]: {
+    tabla: 'Usuarios',
+    query: ALL_USUARIOS_V2,
+    tableHeads: Usuarios,
+    labelBtn: 'Añadir usuario',
     variables: {
       fecha1: '',
       fecha2: ''
     },
-    modal: IntervaloModal,
-    editComponent: EditFacturas
+    editComponent: EditUsuarios
   }
 }

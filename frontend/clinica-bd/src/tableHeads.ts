@@ -1,6 +1,6 @@
-export const Peliculas = ['titulo', 'Nombre de director', 'Apellido del director', 'elenco', 'genero']
+export const Peliculas = ['idPelicula', 'titulo', 'Nombre de director', 'Apellido del director', 'elenco', 'genero']
 
-export const Membresias = ['Nombre', 'Apellido', 'Fecha adquirida', 'Fecha expiracion']
+export const Membresias = ['idMembresia', 'Nombre', 'Apellido', 'Fecha adquirida', 'Fecha expiracion']
 
 export const MontoRentasMes = ['Mes', 'Genero', 'Cantidad de rentas', 'Monto total', 'Año']
 
@@ -10,4 +10,4 @@ export const PeliculasMulta = ['Titulo', 'Monto de multa', 'Fecha alquilada', 'F
 
 export const Top10 = ['Titulo', 'Cantidad de rentas']
 
-export const FacturasIntervalo = ['idFactura', 'Motivo', 'Paciente', 'Monto', 'Fecha Emitida']
+export const Usuarios = ['idUsuario', 'Nombre', 'Apellido', 'Edad', 'Forma de pago']

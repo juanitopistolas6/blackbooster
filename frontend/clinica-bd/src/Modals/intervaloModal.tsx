@@ -26,8 +26,6 @@ export const IntervaloModal = () => {
   })
   const { data } = useQuery<getAll>(ALL_USUARIOS)
 
-  console.log(data)
-
   const handleSave = (event: SelectChangeEvent) => {
     setDetails(prev => {
       return { ...prev, clienteId: parseInt(event.target.value) }

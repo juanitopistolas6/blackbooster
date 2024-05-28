@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from '@apollo/client'
 import { useResult } from '../contexts/result-context'
 import { HeroIcons } from '../utils/heroicons'
-import { GET_INTERVAL_CITAS } from '../graphql/queries'
+import { GET_RENTA } from '../graphql/queries'
 import { type Cita } from '../types'
 import { TextField } from '@mui/material'
 import { type SubmitHandler, useForm } from 'react-hook-form'
@@ -11,45 +11,41 @@ import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useEffect, useState } from 'react'
-import { ADD_CITA, DELETE_INTERVALO, EDIT_INTERVALO } from '../graphql/mutations'
+import { ADD_RENTA, DELETE_RENTA, EDIT_RENTA } from '../graphql/mutations'
 
 interface getQuery {
-  getCitasIntervalo: Cita
+  getRenta: Cita
 }
+
+type fechas = 'alquilada' | 'retorno'
 
 interface formValues {
-  cita: number
-  medico: number
-  paciente: number
-  motivo: string
-}
-
-interface value {
-  idCita: number
-  idPaciente: number
-  idMedico: number
-  fecha: string
-  motivo: string
+  idRenta: number
+  idUsuario: number
+  idPelicula: number
+  fecha_alquilada: string
+  fecha_retorno: string
 }
 
 export const EditIntervalo = () => {
   const { handleCloseEdit, currentQuery, refetch, modalOption } = useResult()
-  const { data } = useQuery<getQuery>(GET_INTERVAL_CITAS, {
+  const { data } = useQuery<getQuery>(GET_RENTA, {
     variables: {
-      idCita: currentQuery.editVariables
+      idRenta: currentQuery.editVariables
     }
   })
 
   const emptyVlue: formValues = {
-    cita: 0,
-    medico: 0,
-    motivo: '',
-    paciente: 0
+    idRenta: 0,
+    idPelicula: 0,
+    idUsuario: 0,
+    fecha_alquilada: '',
+    fecha_retorno: ''
   }
 
-  const [deleteTrigger] = useMutation(DELETE_INTERVALO, {
+  const [deleteTrigger] = useMutation(DELETE_RENTA, {
     variables: {
-      idCita: currentQuery.editVariables
+      idRenta: currentQuery.editVariables
     },
     update: () => {
       void refetch()
@@ -58,54 +54,33 @@ export const EditIntervalo = () => {
   })
 
   const {
-    fecha,
-    id_citas,
-    id_medico,
-    id_paciente,
-    motivo
-  } = data?.getCitasIntervalo ?? {}
+    fecha_alquilada,
+    fecha_retorno,
+    id_pelicula,
+    id_renta,
+    id_usuario
+  } = data?.getRenta ?? {}
 
   const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<formValues>({
     values: modalOption === 'Edit'
       ? {
-          cita: id_citas ?? -1,
-          medico: id_medico ?? -1,
-          paciente: id_paciente ?? -1,
-          motivo: motivo ?? ''
+          fecha_alquilada: fecha_alquilada ?? '',
+          fecha_retorno: fecha_retorno ?? '',
+          idPelicula: id_pelicula ?? 0,
+          idRenta: id_renta ?? 0,
+          idUsuario: id_usuario ?? 0
         }
       : emptyVlue
   })
 
   const variables = watch()
 
-  const [values, setValues] = useState<value>({
-    fecha: fecha ?? '',
-    idCita: id_citas ?? 0,
-    idMedico: id_medico ?? 0,
-    idPaciente: id_paciente ?? 0,
-    motivo: motivo ?? ''
-  })
-
-  const [editTrigger] = useMutation(EDIT_INTERVALO, {
-    variables: values,
-    update: () => {
-      void refetch()
-      handleCloseEdit()
-    }
-  })
-
-  const [addTrigger] = useMutation(ADD_CITA)
-
   useEffect(() => {
     const subscription = watch((value) => {
-      // console.log(value)
       setValues(prev => {
         return {
           ...prev,
-          idCita: value.cita ?? 0,
-          idMedico: value.medico ?? 0,
-          idPaciente: value.paciente ?? 0,
-          motivo: value.motivo ?? ''
+          ...value
         }
       })
     }
@@ -113,18 +88,38 @@ export const EditIntervalo = () => {
     return () => { subscription.unsubscribe() }
   }, [variables])
 
-  useEffect(() => {
-    console.log(values)
-  }, [values])
+  const [values, setValues] = useState<formValues>({
+    fecha_alquilada: fecha_alquilada ?? '',
+    fecha_retorno: fecha_retorno ?? '',
+    idPelicula: id_pelicula ?? 0,
+    idRenta: id_renta ?? 0,
+    idUsuario: id_usuario ?? 0
+  })
+
+  const [editTrigger] = useMutation(EDIT_RENTA, {
+    variables: values,
+    update: () => {
+      void refetch()
+      handleCloseEdit()
+    }
+  })
+
+  const [addTrigger] = useMutation(ADD_RENTA)
 
   const handleEdit: SubmitHandler<formValues> = async (data) => {
-    void editTrigger()
+    void editTrigger({
+      variables: values,
+      update: () => {
+        void refetch()
+        handleCloseEdit()
+      }
+    })
   }
 
   const handleAdd = () => {
     if (isValid) {
       void addTrigger({
-        variables: data,
+        variables: values,
         update: () => {
           void refetch()
           handleCloseEdit()
@@ -133,14 +128,15 @@ export const EditIntervalo = () => {
     }
   }
 
-  const handleDatePicker = (value: Dayjs | null) => {
+  const handleDatePicker = (value: Dayjs | null, to: fechas) => {
     setValues(prev => {
-      return {
-        ...prev,
-        fecha: value?.toISOString() ?? ''
-      }
+      return to === 'alquilada'
+        ? { ...prev, fecha_alquilada: value?.toISOString() ?? '' }
+        : { ...prev, fecha_retorno: value?.toISOString() ?? '' }
     })
   }
+
+  console.log(values)
 
   return (
     <div className="w-[300px] bg-white h-auto rounded-xl">
@@ -155,92 +151,84 @@ export const EditIntervalo = () => {
         </div>
         <form className='px-3 flex flex-col gap-3 justify-center mb-2' onSubmit={handleSubmit(handleEdit)}>
           <TextField
-            label="idCita"
+            label="idRenta"
             id="outlined-size-small"
             size="small"
             disabled={ modalOption !== 'Add' }
-            {...register('cita',
+            {...register('idRenta',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idCita debe ser un numero'
               }
             )}
-            error={!!errors.cita}
-            helperText={errors.cita?.message}
+            error={!!errors.idRenta}
+            helperText={errors.idRenta?.message}
           />
           <TextField
-            label="idPaciente"
+            label="idUsuario"
             id="outlined-size-small"
             size="small"
-            {...register('paciente',
+            {...register('idUsuario',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idPaciente debe ser un numero'
               }
             )}
-            error={!!errors.paciente}
-            helperText={errors.paciente?.message}
+            error={!!errors.idUsuario}
+            helperText={errors.idUsuario?.message}
           />
           <TextField
-            label="idMedico"
+            label="idPelicula"
             id="outlined-size-small"
             size="small"
-            {...register('medico',
+            {...register('idPelicula',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idMedico debe ser un numero'
               }
             )}
-            error={!!errors.medico}
-            helperText={errors.medico?.message}
-          />
-          <TextField
-            label="Motivo"
-            id="outlined-size-small"
-            size="small"
-            InputLabelProps={{
-              shrink: true
-            }}
-            {...register('motivo',
-              {
-                required: true,
-                validate: value => value.length > 8 || 'El motivo tiene que tener 8 caracteres min'
-              }
-            )}
-            error={!!errors.motivo}
-            helperText={errors.motivo?.message}
+            error={!!errors.idPelicula}
+            helperText={errors.idPelicula?.message}
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
-              label='Fecha'
+              label='Fecha alquilada'
               className='outline-none border-neutral-300 hover:border-sky-500 transition-colors'
-              defaultValue={dayjs(fecha)}
-              onChange={handleDatePicker}
+              defaultValue={dayjs(values.fecha_alquilada)}
+              onChange={(e) => { handleDatePicker(e, 'alquilada') }}
+            />
+          </LocalizationProvider>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label='Fecha de retorno'
+              className='outline-none border-neutral-300 hover:border-sky-500 transition-colors'
+              defaultValue={dayjs(values.fecha_retorno)}
+              onChange={(e) => { handleDatePicker(e, 'retorno') }}
             />
           </LocalizationProvider>
           <div className='flex px-3 justify-center gap-3 '>
           { modalOption === 'Edit'
             ? <>
-                    <button
-                      className='bg-green-500 text-white h-10 w-16 rounded-md'
-                      type='submit'
-                    >
-                      Editar
-                    </button>
-                    <button className='bg-red-500 text-white h-10 w-16 rounded-md' onClick={() => { void deleteTrigger() }}>
-                      Eliminar
-                    </button>
-                  </>
+                <button
+                  className='bg-green-500 text-white h-10 w-16 rounded-md'
+                  type='submit'
+                >
+                  Editar
+                </button>
+                <button className='bg-red-500 text-white h-10 w-16 rounded-md' onClick={() => { void deleteTrigger() }}>
+                  Eliminar
+                </button>
+              </>
             : (
-                  <button
-                    onClick={handleAdd}
-                    className='bg-green-500 text-white h-10 w-24 rounded-md'
-                  >
-                    Añadir
-                  </button>
+                <button
+                  onClick={handleAdd}
+                  className='bg-green-500 text-white h-10 w-24 rounded-md'
+                >
+                  Añadir
+                </button>
               )
             }
           </div>

@@ -5,38 +5,44 @@ import { HeroIcons } from '../utils/heroicons'
 import { useResult } from '../contexts/result-context'
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { useMutation, useQuery } from '@apollo/client'
-import { GET_PACIENTE } from '../graphql/queries'
-import type { Paciente } from '../types.d'
+import { GET_PELICULA } from '../graphql/queries'
+import type { Pelicula } from '../types'
 import { useEffect, useState } from 'react'
-import { ADD_PACIENTE, DELETE_PACIENTE, EDIT_PACIENTE } from '../graphql/mutations'
+import { ADD_PELICULA, DELETE_PELICULA, EDIT_PELICULA } from '../graphql/mutations'
 
 interface getData {
-  getPaciente: Paciente
+  getPelicula: Pelicula
 }
 
 interface formValues {
-  idPaciente: number
-  nombre: string
-  apellido: string
+  id_pelicula: number
+  titulo: string
+  id_director: number
+  id_genero: number
+  id_clasificacion: number
+  ano_estreno: string
 }
 
 export const EditPacientes = () => {
   const { handleCloseEdit, currentQuery, refetch, modalOption } = useResult()
-  const { data } = useQuery<getData>(GET_PACIENTE, {
+  const { data } = useQuery<getData>(GET_PELICULA, {
     variables: {
-      idPaciente: currentQuery.editVariables
+      idPelicula: currentQuery.editVariables
     }
   })
 
   const emptyForm: formValues = {
-    idPaciente: 0,
-    apellido: '',
-    nombre: ''
+    id_pelicula: 0,
+    titulo: '',
+    id_director: 0,
+    id_genero: 0,
+    id_clasificacion: 0,
+    ano_estreno: ''
   }
 
-  const [deleteTrigger] = useMutation(DELETE_PACIENTE, {
+  const [deleteTrigger] = useMutation(DELETE_PELICULA, {
     variables: {
-      idPaciente: currentQuery.editVariables
+      idPelicula: currentQuery.editVariables
     },
     update: () => {
       void refetch()
@@ -45,30 +51,40 @@ export const EditPacientes = () => {
   })
 
   const {
-    id_paciente,
-    nombre,
-    apellido
-  } = data?.getPaciente ?? {}
+    ano_estreno,
+    id_clasificacion,
+    id_director,
+    id_genero,
+    id_pelicula,
+    titulo
+  } = data?.getPelicula ?? {}
 
   const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<formValues>({
     values: modalOption === 'Edit'
       ? {
-          idPaciente: id_paciente ?? 0,
-          nombre: nombre ?? '',
-          apellido: apellido ?? ''
+          ano_estreno: ano_estreno ?? '',
+          id_clasificacion: id_clasificacion ?? 0,
+          id_director: id_director ?? 0,
+          id_genero: id_genero ?? 0,
+          id_pelicula: id_pelicula ?? 0,
+          titulo: titulo ?? ''
         }
       : emptyForm
   })
 
+  console.log(currentQuery.editVariables)
   const details = watch()
 
   const [values, setValues] = useState<formValues>({
-    idPaciente: id_paciente ?? 0,
-    nombre: nombre ?? '',
-    apellido: apellido ?? ''
+    ano_estreno: ano_estreno ?? '',
+    id_clasificacion: id_clasificacion ?? 0,
+    id_director: id_director ?? 0,
+    id_genero: id_genero ?? 0,
+    id_pelicula: id_pelicula ?? 0,
+    titulo: titulo ?? ''
   })
 
-  const [addTrigger] = useMutation(ADD_PACIENTE, {
+  const [addTrigger] = useMutation(ADD_PELICULA, {
     variables: values,
     update: () => {
       void refetch()
@@ -76,7 +92,7 @@ export const EditPacientes = () => {
     }
   })
 
-  const [editTrigger] = useMutation(EDIT_PACIENTE, {
+  const [editTrigger] = useMutation(EDIT_PELICULA, {
     variables: values,
     update: () => {
       void refetch()
@@ -85,7 +101,13 @@ export const EditPacientes = () => {
   })
 
   const handleEdit: SubmitHandler<formValues> = async (data) => {
-    void editTrigger()
+    void editTrigger({
+      variables: values,
+      update: () => {
+        void refetch()
+        handleCloseEdit()
+      }
+    })
   }
 
   const handleAdd = () => {
@@ -113,6 +135,8 @@ export const EditPacientes = () => {
     return () => { subscription.unsubscribe() }
   }, [details])
 
+  console.log(details)
+
   return (
     <div className="w-[300px] bg-white h-auto rounded-xl">
       <div className="flex flex-col p-2">
@@ -126,51 +150,99 @@ export const EditPacientes = () => {
         </div>
         <form className='px-3 flex flex-col gap-3 justify-center mb-2' onSubmit={handleSubmit(handleEdit)}>
           <TextField
-            label="idPaciente"
+            label="idPelicula"
             id="outlined-size-small"
             size="small"
             disabled ={ modalOption !== 'Add' }
-            {...register('idPaciente',
+            {...register('id_pelicula',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idPaciente debe ser un numero'
               }
             )}
-            error={!!errors.idPaciente}
-            helperText={errors.idPaciente?.message}
+            error={!!errors.id_pelicula}
+            helperText={errors.id_pelicula?.message}
           />
           <TextField
-            label="Nombre"
+            label="Titulo"
             id="outlined-size-small"
             size="small"
             InputLabelProps={{
               shrink: true
             }}
-            {...register('nombre',
+            {...register('titulo',
               {
                 required: true,
-                validate: value => value.length > 4 || 'El nombre debe ser mayor a 4 caracteres'
+                validate: value => value.length > 4 || 'El titulo debe ser mayor a 4 caracteres'
               }
             )}
-            error={!!errors.nombre}
-            helperText={errors.nombre?.message}
+            error={!!errors.titulo}
+            helperText={errors.titulo?.message}
           />
           <TextField
-            label="Apellido"
+            label="idDirector"
             id="outlined-size-small"
             size="small"
             InputLabelProps={{
               shrink: true
             }}
-            {...register('apellido',
+            {...register('id_director',
               {
                 required: true,
-                validate: value => value.length > 4 || 'El apellido debe ser mayor a 4 caracteres'
+                valueAsNumber: true,
+                validate: value => value > 0 || 'El campo debe ser un numero'
               }
             )}
-            error={!!errors.apellido}
-            helperText={errors.apellido?.message}
+            error={!!errors.id_director}
+            helperText={errors.id_director?.message}
+          />
+          <TextField
+            label="idClasificacion"
+            id="outlined-size-small"
+            size="small"
+            InputLabelProps={{
+              shrink: true
+            }}
+            {...register('id_clasificacion',
+              {
+                required: true,
+                valueAsNumber: true,
+                validate: value => value > 0 || 'El campo debe ser un numero'
+              }
+            )}
+            error={!!errors.id_clasificacion}
+            helperText={errors.id_clasificacion?.message}
+          />
+          <TextField
+            label="idGenero"
+            id="outlined-size-small"
+            size="small"
+            {...register('id_genero',
+              {
+                required: true,
+                valueAsNumber: true,
+                validate: value => value >= 0 || 'El campo debe ser un numero'
+              }
+            )}
+            error={!!errors.id_genero}
+            helperText={errors.id_genero?.message}
+          />
+          <TextField
+            label="Año de estreno"
+            id="outlined-size-small"
+            size="small"
+            InputLabelProps={{
+              shrink: true
+            }}
+            {...register('ano_estreno',
+              {
+                required: true,
+                validate: value => value.length === 4 || 'El año debe tener 4 caracteres'
+              }
+            )}
+            error={!!errors.ano_estreno}
+            helperText={errors.ano_estreno?.message}
           />
           <div className='flex px-3 justify-center gap-3 '>
             { modalOption === 'Edit'

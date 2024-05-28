@@ -45,7 +45,7 @@ function App () {
         <div className="border-r w-20 flex flex-col">
           <div className="h-20 border-b flex items-center justify-center">
             <HeroIcons
-              name="CubeIcon"
+              name="CircleStackIcon"
               className="w-10 h-10 text-green-500 hover:rotate-12"
             />
           </div>
@@ -59,7 +59,7 @@ function App () {
             <div className="h-full w-full flex flex-col gap-4">
               <div className="flex justify-between">
                 <div className='flex gap-1'>
-                  <h1 className="text-3xl font-semibold text-left">Clinica -</h1>
+                  <h1 className="text-3xl font-semibold text-left">BackBooster -</h1>
                   <h1 className="text-3xl font-semibold text-left">{currentQuery.tabla}</h1>
 
                 </div>
@@ -94,7 +94,7 @@ function App () {
                     <MenuItem value={TABLAS.PELICULAS}>Peliculas</MenuItem>
                     <MenuItem value={TABLAS.PELICULAS_MULTA}>Peliculas con multa</MenuItem>
                     <MenuItem value={TABLAS.TOP10_PELICULAS}>Top 10 peliculas</MenuItem>
-                    <MenuItem value={TABLAS.FACTURAS_INTERVALO}>Facturas / intervalo y fecha</MenuItem>
+                    <MenuItem value={TABLAS.USUARIOS}>Usuarios</MenuItem>
                   </Select>
                 </FormControl>
 

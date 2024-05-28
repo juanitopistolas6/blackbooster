@@ -4,58 +4,55 @@ import { HeroIcons } from '../utils/heroicons'
 import { useResult } from '../contexts/result-context'
 import { type SubmitHandler, useForm } from 'react-hook-form'
 import { useMutation, useQuery } from '@apollo/client'
-import { GET_MEDICO_ASIGNADO } from '../graphql/queries'
-import type { PacienteAsignado } from '../types'
+import { GET_MEMBRESIA } from '../graphql/queries'
+import type { Membresia } from '../types'
 import { useEffect, useState } from 'react'
-import { ADD_MEDICO_ASIGNADO, DELETE_MEDICO_ASIGNADO, EDIT_MEDICO_ASIGNADO } from '../graphql/mutations'
-
-interface formValues {
-  idAsignado: number
-  idPaciente: number
-  idMedico: number
-}
+import { ADD_MEMBRESIA, DELETE_MEMBRESIA, EDIT_MEMBRESIA } from '../graphql/mutations'
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 
 interface getData {
-  getMedicoAsignado: PacienteAsignado
+  getMembresia: Membresia
 }
 
 export const EditMedicoAsignado = () => {
   const { handleCloseEdit, modalOption, currentQuery, refetch } = useResult()
-  const { data: medicoAsignadoData } = useQuery<getData>(GET_MEDICO_ASIGNADO, {
+  const { data: medicoAsignadoData } = useQuery<getData>(GET_MEMBRESIA, {
     variables: {
-      idAsignado: currentQuery.editVariables
+      idMembresia: currentQuery.editVariables
     }
   })
 
-  const { id_asignado, id_medico, id_paciente } = medicoAsignadoData?.getMedicoAsignado ?? {}
+  const { fecha_adquerida, id_cliente, id_membresia } = medicoAsignadoData?.getMembresia ?? {}
 
-  const emptyValues: formValues = {
-    idAsignado: 0,
-    idMedico: 0,
-    idPaciente: 0
+  const emptyValues: Membresia = {
+    id_cliente: 0,
+    id_membresia: 0,
+    fecha_adquerida: ''
   }
 
-  const [data, setData] = useState<formValues>({
-    idAsignado: id_asignado ?? 0,
-    idMedico: id_medico ?? 0,
-    idPaciente: id_paciente ?? 0
+  const [data, setData] = useState<Membresia>({
+    id_cliente: id_cliente ?? 0,
+    id_membresia: id_membresia ?? 0,
+    fecha_adquerida: fecha_adquerida ?? ''
   })
 
-  const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<formValues>({
+  const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<Membresia>({
     values: modalOption === 'Edit'
       ? {
-          idAsignado: id_asignado ?? 0,
-          idMedico: id_medico ?? 0,
-          idPaciente: id_paciente ?? 0
+          id_cliente: id_cliente ?? 0,
+          id_membresia: id_membresia ?? 0,
+          fecha_adquerida: fecha_adquerida ?? ''
         }
       : emptyValues
   })
 
-  const [triggerEdit, { error: editError }] = useMutation(EDIT_MEDICO_ASIGNADO)
+  const [triggerEdit, { error: editError }] = useMutation(EDIT_MEMBRESIA)
 
   const fields = watch()
 
-  const handleEdit: SubmitHandler<formValues> = (values) => {
+  const handleEdit: SubmitHandler<Membresia> = (values) => {
     void triggerEdit({
       variables: data,
       update: () => {
@@ -65,7 +62,7 @@ export const EditMedicoAsignado = () => {
     })
   }
 
-  const [addTrigger, { error: addError }] = useMutation(ADD_MEDICO_ASIGNADO, {
+  const [addTrigger, { error: addError }] = useMutation(ADD_MEMBRESIA, {
     variables: data,
     update: () => {
       void refetch()
@@ -73,9 +70,9 @@ export const EditMedicoAsignado = () => {
     }
   })
 
-  const [deleteTrigger, { error: deleteError }] = useMutation(DELETE_MEDICO_ASIGNADO, {
+  const [deleteTrigger, { error: deleteError }] = useMutation(DELETE_MEMBRESIA, {
     variables: {
-      idAsignado: currentQuery.editVariables
+      idMembresia: currentQuery.editVariables
     },
     update: () => {
       void refetch()
@@ -95,6 +92,8 @@ export const EditMedicoAsignado = () => {
     }
   }
 
+  console.log(data)
+
   useEffect(() => {
     const subscription = watch(values => {
       setData(prev => {
@@ -106,6 +105,15 @@ export const EditMedicoAsignado = () => {
       subscription.unsubscribe()
     }
   }, [fields])
+
+  const handleDatePicker = (value: Dayjs | null) => {
+    setData(prev => {
+      return {
+        ...prev,
+        fecha_adquerida: value?.toISOString() ?? ''
+      }
+    })
+  }
 
   return (
     <div className="w-[300px] bg-white h-auto rounded-xl">
@@ -121,54 +129,45 @@ export const EditMedicoAsignado = () => {
         <form className='px-3 flex flex-col gap-3 justify-center mb-2' onSubmit={handleSubmit(handleEdit)}>
           { (addError ?? editError ?? deleteError) && <p className='bg-red-500 text-center text-white font-semibold'>ERROR</p> }
           <TextField
-            label="idAsignado"
+            label="idMembresia"
             id="outlined-size-small"
             size="small"
             disabled ={ modalOption !== 'Add' }
-            {...register('idAsignado',
+            {...register('id_membresia',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idAsignado debe ser un número positivo'
               }
             )}
-            error={!!errors.idAsignado}
-            helperText={errors.idAsignado?.message}
+            error={!!errors.id_membresia}
+            helperText={errors.id_membresia?.message}
           />
           <TextField
-            label="idMedico"
+            label="idCliente"
             id="outlined-size-small"
             size="small"
             InputLabelProps={{
               shrink: true
             }}
-            {...register('idMedico',
+            {...register('id_cliente',
               {
                 required: true,
                 valueAsNumber: true,
                 validate: value => value >= 0 || 'El idMedico debe ser un número positivo'
               }
             )}
-            error={!!errors.idMedico}
-            helperText={errors.idMedico?.message}
+            error={!!errors.id_cliente}
+            helperText={errors.id_cliente?.message}
           />
-          <TextField
-            label="idPaciente"
-            id="outlined-size-small"
-            size="small"
-            InputLabelProps={{
-              shrink: true
-            }}
-            {...register('idPaciente',
-              {
-                required: true,
-                valueAsNumber: true,
-                validate: value => value >= 0 || 'El idPaciente debe ser un número positivo'
-              }
-            )}
-            error={!!errors.idPaciente}
-            helperText={errors.idPaciente?.message}
-          />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label='Fecha adquirida'
+              className='outline-none border-neutral-300 hover:border-sky-500 transition-colors'
+              defaultValue={dayjs(fecha_adquerida)}
+              onChange={handleDatePicker}
+            />
+          </LocalizationProvider>
           <div className='flex px-3 justify-center gap-3 '>
             { modalOption === 'Edit'
               ? <>
