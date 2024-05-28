@@ -7,4 +7,9 @@ en la variable de entorno que se encuentra en el archivo
 2.- iniciar el backend con
 npx nodemon 
 
-3.- Una vez iniciado se ira a la carpeta de /frontend/
+3.- Una vez iniciado se ira a la carpeta de /frontend/clinica-bd y
+ejecutar el siguiente comando:
+npm install
+
+4.- Y por ultimo para ejecutar la aplicacion:
+npm run dev
